@@ -75,7 +75,7 @@ TEST(Solvability, Case01EveryClueObtainable) {
     const auto got = reachable_clues(c);
     for (const auto& k : c.clues) EXPECT_TRUE(got.count(k.id)) << "unobtainable clue: " << k.id;
 }
-TEST(Solvability, Case01RequiredCluesAreEnoughAndRedHerringExists) {
+TEST(Solvability, Case01HasEnoughRequiredCluesAndARedHerring) {
     const Case c = real_case();
     EXPECT_GE(c.solution.required_clues.size(), 3u);
     EXPECT_LT(c.solution.required_clues.size(), c.clues.size());  // >= 1 red herring

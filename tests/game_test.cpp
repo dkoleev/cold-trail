@@ -104,3 +104,26 @@ TEST(Game, HelpListsCommands) {
     auto g = mini();
     EXPECT_TRUE(contains(run(g, "help"), "accuse"));
 }
+TEST(Game, TalkShowsPersonDescription) {
+    auto g = mini();
+    const std::string s = run(g, "talk mr. grey");
+    EXPECT_TRUE(contains(s, "Stiff and pale"));
+}
+TEST(Game, TalkToPersonWithNoLinesSaysSo) {
+    auto g = Game(parse_case(replace_all(kMiniCase, "\"talk\":[{\"text\":\"I was asleep.\"}]", "\"talk\":[]")));
+    run(g, "go study");
+    const std::string s = run(g, "talk ann");
+    EXPECT_TRUE(contains(s, "nothing to say"));
+    EXPECT_TRUE(contains(s, "Nervous"));
+}
+TEST(Game, GoToCurrentLocationSaysAlreadyThere) {
+    auto g = mini();
+    const std::string s = run(g, "go Hall");
+    EXPECT_TRUE(contains(s, "already"));
+    EXPECT_FALSE(contains(s, "can't go"));
+}
+TEST(Game, IntroMentionsHelp) {
+    auto g = mini();
+    const std::string s = g.intro();
+    EXPECT_TRUE(contains(s, "help"));
+}
