@@ -4,7 +4,7 @@ A CLI text detective game: investigate a crime scene, gather evidence, interview
 
 ## How to Play
 
-Navigate locations, talk to suspects and learn their stories, examine evidence for clues. Piece together the facts to identify the culprit. You must gather sufficient evidence before accusing; accusing without proof is a soft refusal, but accusing the wrong person ends the game.
+Navigate locations, talk to suspects and learn their stories, examine evidence for clues. Piece together the facts to identify the culprit. Accusing the real killer before you have enough evidence is refused and the game goes on. Accusing anyone else ends the game: one wrong accusation means game over.
 
 ## Commands
 
@@ -42,7 +42,7 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
-Expected: 39 tests pass.
+Expected: all tests pass.
 
 ## Run the Game
 
@@ -50,7 +50,7 @@ Expected: 39 tests pass.
 build/detective [case.json]
 ```
 
-- Default case: `data/case01.json` (compiled at build time)
+- Default case: `data/case01.json` (the absolute path of the data directory is baked in at build time; if you move the binary, pass the case path as `argv[1]`)
 - Optional: specify a case file path to load a different case
 
 Example:
@@ -73,7 +73,7 @@ Detective cases are JSON files. See `docs/case-format.md` for the schema. A case
 
 ```
 src/               Engine: case loader, command parser, game logic
-tests/             GoogleTest suite (39 tests)
+tests/             GoogleTest suite
 data/              Case files (JSON)
 docs/              Documentation
   case-format.md   Case JSON schema and design rules
@@ -84,14 +84,14 @@ CMakeLists.txt     Build configuration
 
 | Role | Owner | Scope |
 |------|-------|-------|
-| Lead | main session | Delegates tasks, accepts all PRs |
+| Lead | main session | Delegates tasks, reviews PRs first (as a PR comment) |
 | Programmer | `programmer` agent | `src/`, CMakeLists.txt |
 | Game Designer | `game-designer` agent | `data/`, case-format.md |
 | QA | `qa` agent | `tests/`, writes tests first |
-| User | (you) | Code review, merge PRs |
+| User | (you) | Reviews and merges PRs |
 
 ## PR Workflow
 
-1. Lead reviews the PR first, posts findings as a comment (never approves or merges)
+1. Lead reviews the PR first and posts findings as a PR comment (never approves, merges or closes)
 2. User reviews, then merges or closes
-3. If remarks are made, the responsible agent fixes and pushes to the PR branch
+3. Remarks are fixed by the programmer, who pushes to the PR branch (test or data remarks go to qa / game-designer)

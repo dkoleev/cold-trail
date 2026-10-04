@@ -37,7 +37,7 @@ bool Game::learn(const std::string& id) {
     return true;
 }
 
-std::string Game::intro() const { return case_.title + "\n\n" + case_.intro + "\n\n" + look(); }
+std::string Game::intro() const { return case_.title + "\n\n" + case_.intro + "\n\n" + look() + "\nType 'help' for commands."; }
 
 std::string Game::execute(const Command& cmd) {
     if (finished()) return "The case is closed. Type 'quit' to leave.";
@@ -75,6 +75,8 @@ std::string Game::look() const {
 
 std::string Game::go(const std::string& arg) {
     if (arg.empty()) return "Go where?";
+    if (normalize(here().name) == normalize(arg) || normalize(here().id) == normalize(arg))
+        return "You are already in " + here().name + ".";
     for (const auto& id : here().exits) {
         const Location* dest = by_id(case_.locations, id);
         if (normalize(dest->name) == normalize(arg) || normalize(id) == normalize(arg)) {
@@ -90,12 +92,15 @@ std::string Game::talk(const std::string& arg) {
     const Person* p = by_arg(case_.people, arg);
     if (!p || p->location != location_) return "There is nobody like that here.";
     std::ostringstream o;
-    o << p->name << ":\n";
+    o << p->name << " - " << p->description << "\n";
+    bool spoke = false;
     for (const auto& ln : p->talk) {
         if (ln.requires_clue && !has(*ln.requires_clue)) continue;
+        spoke = true;
         o << "  \"" << ln.text << "\"\n";
         if (ln.reveals && learn(*ln.reveals)) o << "  [New clue] " << by_id(case_.clues, *ln.reveals)->text << "\n";
     }
+    if (!spoke) o << p->name << " has nothing to say.\n";
     return o.str();
 }
 
