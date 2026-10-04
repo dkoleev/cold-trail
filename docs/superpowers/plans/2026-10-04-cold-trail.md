@@ -14,15 +14,18 @@
 - C++20: `CMAKE_CXX_STANDARD 20`, REQUIRED ON, extensions OFF. No C++23.
 - No `std::format` unless CI proves it builds on all 3 platforms; use streams/concat.
 - Game text + commands: English.
-- One accusation: wrong `accuse` = game over.
+- One accusation: wrong person = game over. Killer accused without full evidence = soft refusal ("need more evidence"), game continues. Unknown name / no arg = non-fatal.
 - CI on `pull_request`: ubuntu-latest, windows-latest, macos-latest must be green.
-- Ownership (agents write only here): game-designer `data/`, `docs/case-format.md`; programmer `src/`, `CMakeLists.txt`, unit tests `tests/*_test.cpp` for its own code; qa `tests/solvability_test.cpp`, `tests/playthrough_test.cpp`, new tests. Lead: everything else, merges, routing bugs.
+- Ownership (agents write only here): game-designer `data/`, `docs/case-format.md`; programmer `src/`, `CMakeLists.txt`; qa ALL of `tests/` (except Task 1 skeleton: `tests/CMakeLists.txt`, `smoke_test.cpp`, Lead). Lead: everything else, routing bugs. User merges PRs to `main`.
+- Cross-role TDD: qa writes failing tests from the interfaces in the plan; programmer makes them pass without editing tests. Test wrong? programmer reports to Lead, qa fixes.
+- Local toolchain = CLion bundle (not on PATH). PowerShell: `$b="C:\Program Files\JetBrains\CLion 2026.2.3.1\bin"; $env:PATH="$b\cmake\win\x64\bin;$b\ninja\win\x64;$b\mingw\bin;$env:PATH"`, then add `-G Ninja` to the configure step. Local exe path: `build\detective.exe`.
 - `requires` is a C++20 keyword -> C++ field is `requires_clue`; JSON key stays `"requires"`.
 - Every commit message ends with `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.
 - Build/test cmd: `cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build --config Debug --parallel && ctest --test-dir build -C Debug --output-on-failure`.
 
 ## Order
-1 -> 2 -> {3, 4, 5 parallel} -> 6 (needs 4,5) -> 7 -> 8 (needs 3,6) -> 9.
+1 -> 2 -> {3 designer; 4T, 5T, 6T qa tests (parallel)} -> {4I, 5I programmer} -> 6I (needs 4I, 5I) -> 7 -> 8 (needs 3, 6I) -> 9.
+`nT` = qa writes tests of Task n (Steps 1-2), `nI` = programmer implements (Steps 3-5). Both get a commit.
 
 ## Contract: case JSON
 Top: `title, intro, start(locId), locations[], people[], items[], clues[], solution`.
@@ -38,7 +41,7 @@ Top: `title, intro, start(locId), locations[], people[], items[], clues[], solut
 2. Mixed case + multi-word args (`ACCUSE MR. GREY`, `go   Study `) resolve. (Tasks 5, 6)
 3. Examine/talk twice -> clue not duplicated, no second `[New clue]`. (Task 6)
 4. Commands after game over refused; stdin EOF exits cleanly; missing/corrupt case file -> message + exit 1, no crash. (Tasks 6, 7)
-5. `accuse` with no arg / unknown name -> NOT fatal (typo must not burn the only chance); killer without full evidence -> lose. (Task 6)
+5. `accuse` with no arg / unknown name / real killer without full evidence -> NOT fatal (typo or early guess must not burn the only chance). Wrong person -> lose. (Task 6)
 
 ---
 
@@ -48,7 +51,7 @@ Top: `title, intro, start(locId), locations[], people[], items[], clues[], solut
 
 **Produces:** targets `detective_core`, `detective`, `unit_tests`; macro `COLD_TRAIL_DATA_DIR`; `ct::Case` model types.
 
-- [ ] **Step 1:** `git switch -c feat/initial-game`; check `cmake --version` + a compiler. If missing -> ask user (CLion bundles cmake).
+- [ ] **Step 1:** `git switch -c feat/initial-game`; set PATH to the CLion bundle (see Global Constraints); `cmake --version`, `g++ --version` must work.
 - [ ] **Step 2:** `CMakeLists.txt`
 ```cmake
 cmake_minimum_required(VERSION 3.20)
@@ -157,8 +160,9 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 ---
 You are the C++20 programmer of Cold Trail.
-Own: src/, CMakeLists.txt, unit tests tests/<unit>_test.cpp for your own code. Never edit data/, docs/case-format.md, qa's tests.
-TDD: failing test first, run it, minimal code, run again. Follow the interfaces given in your task exactly.
+Own: src/, CMakeLists.txt. Never edit tests/, data/, docs/case-format.md.
+qa writes the tests first. Run them (expect FAIL), write minimal code, run again (expect PASS). If a test looks wrong, report to Lead; do not edit it. Follow the interfaces given in your task exactly.
+Local toolchain: CLion bundle, see CLAUDE.md.
 Build/test: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build --config Debug --parallel && ctest --test-dir build -C Debug --output-on-failure
 Never use std::format or C++23. `requires` is a keyword: field is requires_clue.
 Commit per task. Report: what you built, test output summary, deviations.
@@ -172,7 +176,8 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
 ---
 You are QA of Cold Trail.
-Own: tests/solvability_test.cpp, tests/playthrough_test.cpp, new tests you add. Never edit src/ or data/; report bugs to Lead with repro (input -> actual vs expected).
+Own: all of tests/ (except tests/CMakeLists.txt and smoke_test.cpp, Lead's). Write tests first from the interfaces in your task; programmer then makes them pass. Never edit src/ or data/; report bugs to Lead with repro (input -> actual vs expected).
+Local toolchain: CLion bundle, see CLAUDE.md.
 Build/test: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build --config Debug --parallel && ctest --test-dir build -C Debug --output-on-failure
 Try to break it: odd input, repeated actions, bad files. Report: tests added, bugs found.
 ```
@@ -182,7 +187,8 @@ Try to break it: odd input, repeated actions, bad files. Report: tests added, bu
 CLI text detective game, C++20/CMake. Spec: docs/superpowers/specs/. Plan: docs/superpowers/plans/.
 Layout: src/ engine, tests/ GoogleTest, data/case01.json, docs/case-format.md.
 Build/test: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build --config Debug --parallel && ctest --test-dir build -C Debug --output-on-failure
-Team: Lead = main session (delegates, accepts, merges). Subagents in .claude/agents/: game-designer (data/), programmer (src/), qa (tests, bug reports). Stay in your lane.
+Local toolchain (not on PATH): $b="C:\Program Files\JetBrains\CLion 2026.2.3.1\bin"; $env:PATH="$b\cmake\win\x64\bin;$b\ninja\win\x64;$b\mingw\bin;$env:PATH"; configure with -G Ninja.
+Team: Lead = main session (delegates, accepts). User merges PRs. Subagents in .claude/agents/: game-designer (data/), programmer (src/), qa (tests/, writes tests first, reports bugs). Stay in your lane.
 Rules: no std::format, no C++23; `requires_clue` not `requires`; game text English; one accusation only.
 ```
 - [ ] **Step 5:** Reload agents (`/agents` or restart session), confirm 3 listed. Commit `chore: agent team + CLAUDE.md`, push.
@@ -202,7 +208,7 @@ Rules: no std::format, no C++23; `requires_clue` not `requires`; game text Engli
 
 ---
 
-### Task 4: Case model loader (programmer)
+### Task 4: Case model loader (qa Steps 1-2 = 4T, programmer Steps 3-5 = 4I)
 
 **Files:** Create `src/case_loader.h`, `src/case_loader.cpp`, `tests/test_support.h`, `tests/case_loader_test.cpp`
 
@@ -384,7 +390,7 @@ Case load_case(const std::filesystem::path& file) {
 
 ---
 
-### Task 5: Command parser (programmer)
+### Task 5: Command parser (qa Steps 1-2 = 5T, programmer Steps 3-5 = 5I)
 
 **Files:** Create `src/parser.h`, `src/parser.cpp`, `tests/parser_test.cpp`
 
@@ -480,7 +486,7 @@ Command parse_command(std::string_view line) {
 
 ---
 
-### Task 6: Game engine (programmer)
+### Task 6: Game engine (qa Steps 1-2 = 6T, programmer Steps 3-5 = 6I)
 
 **Files:** Create `src/game.h`, `src/game.cpp`, `tests/game_test.cpp`
 
@@ -559,11 +565,13 @@ TEST(Game, AccuseKillerWithEvidenceWins) {
     EXPECT_TRUE(g.finished());
     EXPECT_TRUE(g.won());
 }
-TEST(Game, AccuseKillerWithoutEvidenceLoses) {
+TEST(Game, AccuseKillerWithoutEvidenceIsSoftRefusal) {
     auto g = mini();
-    EXPECT_TRUE(contains(run(g, "accuse butler"), "GAME OVER"));
-    EXPECT_TRUE(g.finished());
-    EXPECT_FALSE(g.won());
+    EXPECT_TRUE(contains(run(g, "accuse butler"), "more evidence"));
+    EXPECT_FALSE(g.finished());
+    run(g, "go study"); run(g, "examine torn note"); run(g, "go hall"); run(g, "talk mr. grey");
+    EXPECT_TRUE(contains(run(g, "accuse butler"), "CASE CLOSED"));
+    EXPECT_TRUE(g.won());
 }
 TEST(Game, AccuseWrongPersonLoses) {
     auto g = mini();
@@ -762,8 +770,8 @@ std::string Game::accuse(const std::string& arg) {
         state_ = State::Won;
         return "You name " + p->name + ". The evidence holds. CASE CLOSED.\n" + s.explanation;
     }
+    if (p->id == s.killer) return "You suspect " + p->name + ", but you need more evidence before you can accuse.";
     state_ = State::Lost;
-    if (p->id == s.killer) return "You name " + p->name + ", but you lack the evidence. The killer walks free. GAME OVER.";
     return "You accuse " + p->name + ". Wrong. The killer escapes. GAME OVER.";
 }
 
@@ -974,10 +982,18 @@ TEST(Playthrough, BotSolvesCase01) {
     EXPECT_TRUE(g.won());
 }
 
-TEST(Playthrough, AccusingKillerImmediatelyLoses) {
+TEST(Playthrough, AccusingKillerImmediatelyIsSoftRefusal) {
     const Case c = real_case();
     Game g(c);
-    g.execute({CommandType::Accuse, name_of(c.people, c.solution.killer)});
+    EXPECT_TRUE(contains(g.execute({CommandType::Accuse, name_of(c.people, c.solution.killer)}), "more evidence"));
+    EXPECT_FALSE(g.finished());
+}
+
+TEST(Playthrough, AccusingInnocentImmediatelyLoses) {
+    const Case c = real_case();
+    Game g(c);
+    const auto innocent = std::ranges::find_if(c.people, [&](const Person& p) { return p.id != c.solution.killer; });
+    g.execute({CommandType::Accuse, innocent->name});
     EXPECT_TRUE(g.finished());
     EXPECT_FALSE(g.won());
 }
@@ -995,13 +1011,9 @@ TEST(Playthrough, AccusingKillerImmediatelyLoses) {
 - [ ] **Step 1:** `README.md`: what the game is, commands list, build (`cmake` cmd from Global Constraints), run (`build/detective [case.json]`), CLion note (open folder -> CMake auto-loads, run config `detective`), team roles table.
 - [ ] **Step 2:** Full local build/test. Expected: all PASS. Play case01 manually once to sanity-check feel/text.
 - [ ] **Step 3:** Commit `docs: README`, push. `gh pr ready`; `gh pr checks --watch`. Expected: 3 platforms green.
-- [ ] **Step 4:** Ask user before merging PR to `main`.
+- [ ] **Step 4:** Tell user PR is ready. User merges (Lead does not).
 
 ---
 
 ## Unresolved questions
-1. Accuse killer without enough clues: plan = lose (one chance). Or soft "need more evidence" non-fatal?
-2. Programmer writes its own unit tests in `tests/` (deviates from spec table, where qa owns `tests/`). OK?
-3. Local cmake + compiler on PATH? Else use CLion's bundled toolchain.
-4. Merge PR to `main` yourself, or may Lead merge after green CI?
-5. Private repo: macOS Actions minutes cost 10x (free tier 2000 min/month). Fine, or make repo public?
+None. Resolved with user: soft refusal for killer without evidence; qa owns all tests; CLion toolchain; user merges; repo public.

@@ -24,7 +24,7 @@ docs/case-format.md     # contract between roles
 - Commands: `look`, `go <place>`, `talk <person>`, `examine <item>`, `clues`, `accuse <person>`, `help`, `quit`.
 - Case: 5-6 locations, 4-5 suspects, 8-10 clues.
 - JSON describes: locations (exits, items, people), characters (lines tied to clues), clues, solution (killer + set of clues sufficient to accuse).
-- Win: `accuse` the killer with enough clues found. Lose: `accuse` the wrong person.
+- Win: `accuse` the killer with enough clues found. Lose: `accuse` the wrong person. Killer without enough clues, unknown name, or no arg: soft refusal, game continues.
 
 ## Team
 | Role | Who | Responsibility | Writes only in |
