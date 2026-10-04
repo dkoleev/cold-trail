@@ -69,14 +69,34 @@ build/detective data/case01.json
 
 Detective cases are JSON files. See `docs/case-format.md` for the schema. A case defines locations, suspects, items, clues, and the solution (required evidence and killer).
 
+## Architecture
+
+Two independent programs share one contract: the case file format (`docs/case-format.md`).
+
+```mermaid
+flowchart LR
+    Designer["game-designer agent<br/>(MCP client)"] -- "MCP / stdio" --> Server
+    Claude["Claude Code<br/>(MCP client)"] -- "MCP / stdio" --> Server
+    Server["case-tools MCP server<br/>Python, planned"] -- "reads, validates, solves" --> Cases[("data/*.json<br/>case files")]
+    Cases -- "loaded at start" --> Client["detective<br/>CLI game client, C++"]
+    Player((Player)) -- "stdin / stdout" --> Client
+```
+
+- **Game client (`detective`, C++20):** loads a case through the validating loader, then runs the game loop: parser turns a line into a command, the engine (`Game`) updates state and returns text. The engine does no I/O, so it is unit-testable.
+- **Case files (`data/*.json`):** the only data both sides understand. The format is documented in `docs/case-format.md`.
+- **MCP server (`case-tools`, Python, planned):** gives MCP clients tools to validate a case, solve it (which clues are reachable, in what order) and lint its quality, plus the format spec as a resource. It does not depend on the C++ build. Design: `docs/superpowers/specs/2026-10-04-case-tools-mcp-design.md`.
+- **MCP clients:** Claude Code and the `game-designer` agent. They call the server's tools while writing cases; the player never talks to MCP.
+
 ## Project Layout
 
 ```
 src/               Engine: case loader, command parser, game logic
 tests/             GoogleTest suite
 data/              Case files (JSON)
+tools/case-tools/  MCP server in Python (planned)
 docs/              Documentation
   case-format.md   Case JSON schema and design rules
+  superpowers/     Specs and plans
 CMakeLists.txt     Build configuration
 ```
 
