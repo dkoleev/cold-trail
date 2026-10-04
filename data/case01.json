@@ -1,0 +1,155 @@
+{
+  "title": "The Last Cigar of Edmund Vale",
+  "intro": "Rain hammers Vale Manor. Edmund Vale, shipping magnate, lies dead in his study with a bronze paperweight beside his head. The household swears it was a quiet evening. One of them is lying. Find the killer, then accuse.",
+  "start": "foyer",
+  "locations": [
+    {
+      "id": "foyer",
+      "name": "Foyer",
+      "description": "A drafty hall of black-and-white tile and dripping umbrellas. Doors lead to the study, the library and the kitchen.",
+      "exits": ["study", "library", "kitchen"],
+      "items": []
+    },
+    {
+      "id": "study",
+      "name": "Study",
+      "description": "Leather, ink and the copper smell of blood. Vale's body has been covered with a coat.",
+      "exits": ["foyer"],
+      "items": ["stopped_clock", "cigar_stub"]
+    },
+    {
+      "id": "library",
+      "name": "Library",
+      "description": "Floor-to-ceiling shelves and a chessboard with the game left half finished.",
+      "exits": ["foyer"],
+      "items": ["torn_iou"]
+    },
+    {
+      "id": "kitchen",
+      "name": "Kitchen",
+      "description": "Copper pots and a cold stove. The window overlooks the drive, and a back door opens onto the garden.",
+      "exits": ["foyer", "garden"],
+      "items": []
+    },
+    {
+      "id": "garden",
+      "name": "Garden",
+      "description": "Wet roses and a gravel path under the study window. The rain has not washed everything away.",
+      "exits": ["kitchen"],
+      "items": ["muddy_footprints"]
+    }
+  ],
+  "people": [
+    {
+      "id": "crane",
+      "name": "Victor Crane",
+      "description": "Vale's business partner. Silver hair, a flawless suit, and a smile that does not move his eyes.",
+      "location": "foyer",
+      "talk": [
+        {
+          "text": "Dreadful business. I left at nine sharp and went straight to my club. I never set foot in the study after dinner.",
+          "reveals": "c_claim"
+        },
+        {
+          "text": "Very well, my car was still on the drive. It would not start. That proves nothing about the study.",
+          "requires": "c_car"
+        }
+      ]
+    },
+    {
+      "id": "quill",
+      "name": "Dr. Mara Quill",
+      "description": "The family physician, hands folded, eyes tired. She was a guest for the night.",
+      "location": "library",
+      "talk": [
+        {
+          "text": "Julian and I played chess from nine until well past ten. He never left the board, I would stake my licence on it."
+        }
+      ]
+    },
+    {
+      "id": "julian",
+      "name": "Julian Vale",
+      "description": "The dead man's nephew. Rumpled, restless, and clearly in need of a drink.",
+      "location": "garden",
+      "talk": [
+        {
+          "text": "Yes, Uncle and I fought over my debts this evening. That does not make me a murderer."
+        },
+        {
+          "text": "Those prints under the window are mine. I went out to sulk at seven. After nine I was with Dr. Quill.",
+          "requires": "c_prints"
+        },
+        {
+          "text": "A cigar in Uncle's study? Those are Crane's. He lights Havana Reservas everywhere and it drove Uncle mad.",
+          "requires": "c_cigar",
+          "reveals": "c_brand"
+        }
+      ]
+    },
+    {
+      "id": "pell",
+      "name": "Mrs. Pell",
+      "description": "The housekeeper. Sturdy, sharp-eyed, and unimpressed by gentlemen.",
+      "location": "kitchen",
+      "talk": [
+        {
+          "text": "Around eight I heard raised voices in the study. Master Julian, shouting about money.",
+          "reveals": "c_argument"
+        },
+        {
+          "text": "A cigar? Mr. Vale never touched tobacco. Doctor's orders, and he hated the smell in his study.",
+          "requires": "c_cigar",
+          "reveals": "c_nosmoke"
+        },
+        {
+          "text": "When I locked the back door at ten, Mr. Crane's black Daimler was still on the drive. He says he left at nine. I say he did not.",
+          "requires": "c_clock",
+          "reveals": "c_car"
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "stopped_clock",
+      "name": "stopped clock",
+      "description": "The mantel clock lies smashed on the hearth, its hands frozen at twenty to ten.",
+      "reveals": "c_clock"
+    },
+    {
+      "id": "cigar_stub",
+      "name": "cigar stub",
+      "description": "A fresh stub in the ashtray, still wearing a gold Havana Reserva band.",
+      "reveals": "c_cigar"
+    },
+    {
+      "id": "torn_iou",
+      "name": "torn IOU",
+      "description": "A scrap of paper in Julian's hand, promising Vale a very large sum, torn in half.",
+      "reveals": "c_debt"
+    },
+    {
+      "id": "muddy_footprints",
+      "name": "muddy footprints",
+      "description": "A man's shoe prints in the flowerbed, leading to the study window and back.",
+      "reveals": "c_prints"
+    }
+  ],
+  "clues": [
+    { "id": "c_clock", "text": "The study clock was smashed and stopped at 9:40, so Vale died at twenty to ten." },
+    { "id": "c_cigar", "text": "A fresh Havana Reserva cigar stub was left in the ashtray of the study." },
+    { "id": "c_nosmoke", "text": "Vale never smoked; he forbade tobacco in his study." },
+    { "id": "c_brand", "text": "Victor Crane habitually smokes Havana Reserva cigars." },
+    { "id": "c_claim", "text": "Crane claims he left at nine sharp and never entered the study after dinner." },
+    { "id": "c_car", "text": "Crane's car was still on the drive at ten, an hour after he claimed to have left." },
+    { "id": "c_debt", "text": "Julian signed an IOU for a large sum to his uncle, which was torn in half." },
+    { "id": "c_argument", "text": "Julian was heard shouting at Vale about money around eight o'clock." },
+    { "id": "c_prints", "text": "A man's muddy footprints lead to and from the study window." }
+  ],
+  "solution": {
+    "killer": "crane",
+    "required_clues": ["c_clock", "c_cigar", "c_nosmoke", "c_brand", "c_claim", "c_car"],
+    "explanation": "Vale died at 9:40 (c_clock). A cigar stub lay in the study (c_cigar), but Vale never smoked (c_nosmoke), and it was Crane's brand (c_brand). Crane swore he left at nine and never returned to the study (c_claim), yet his car was still on the drive at ten (c_car). Julian had motive (debt, quarrel, footprints) but was playing chess with Dr. Quill at 9:40, so only Crane fits."
+  }
+}
