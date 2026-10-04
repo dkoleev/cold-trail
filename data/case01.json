@@ -63,7 +63,8 @@
       "location": "library",
       "talk": [
         {
-          "text": "Julian and I played chess from nine until well past ten. He never left the board, I would stake my licence on it."
+          "text": "Julian and I played chess from nine until well past ten. He never left the board, I would stake my licence on it.",
+          "reveals": "c_alibi"
         }
       ]
     },
@@ -145,11 +146,12 @@
     { "id": "c_car", "text": "Crane's car was still on the drive at ten, an hour after he claimed to have left." },
     { "id": "c_debt", "text": "Julian signed an IOU for a large sum to his uncle, which was torn in half." },
     { "id": "c_argument", "text": "Julian was heard shouting at Vale about money around eight o'clock." },
-    { "id": "c_prints", "text": "A man's muddy footprints lead to and from the study window." }
+    { "id": "c_prints", "text": "A man's muddy footprints lead to and from the study window." },
+    { "id": "c_alibi", "text": "Dr. Quill swears Julian played chess with her from nine until after ten, never leaving the board." }
   ],
   "solution": {
     "killer": "crane",
     "required_clues": ["c_clock", "c_cigar", "c_nosmoke", "c_brand", "c_claim", "c_car"],
-    "explanation": "Vale died at 9:40 (c_clock). A cigar stub lay in the study (c_cigar), but Vale never smoked (c_nosmoke), and it was Crane's brand (c_brand). Crane swore he left at nine and never returned to the study (c_claim), yet his car was still on the drive at ten (c_car). Julian had motive (debt, quarrel, footprints) but was playing chess with Dr. Quill at 9:40, so only Crane fits."
+    "explanation": "Vale died at 9:40 (c_clock). A cigar stub lay in the study (c_cigar), but Vale never smoked (c_nosmoke), and it was Crane's brand (c_brand). Crane swore he left at nine and never returned to the study (c_claim), yet his car was still on the drive at ten (c_car). Julian had motive (debt, quarrel, footprints) but Dr. Quill swears he was at the chessboard with her from nine until after ten (c_alibi), so he cannot have been in the study at 9:40 and only Crane fits."
   }
 }
