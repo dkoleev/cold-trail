@@ -3,7 +3,7 @@
 Python MCP server that validates, solves and lints Cold Trail case files. Goals: (1) give the team (esp. `game-designer`) a fast feedback loop while writing cases; (2) learn how to build MCP servers (tools, resources, prompts, stdio, testing over the protocol).
 
 ## Decisions
-- Language: Python (>= 3.10), official `mcp` Python SDK (FastMCP). Pin a lower bound for `mcp` at plan time after checking the current release.
+- Language: Python (>= 3.10), official `mcp` Python SDK 2.x, pinned `mcp>=2.3,<3` (checked 2026-10-04). In 2.x FastMCP was renamed: `from mcp.server.mcpserver import MCPServer`; tool results expose `is_error` / `structured_content` (snake_case).
 - Independent of the C++ build: validation and solving are reimplemented in Python. Drift risk is covered by a parity test (see Tests).
 - Transport: stdio only. Registered for the team in `.mcp.json` at the repo root.
 - Scope: files `data/*.json` only. No subdirectories, no `..`, no absolute paths.
@@ -19,7 +19,7 @@ tools/case-tools/
     validate.py   # list of Issue objects
     solve.py      # reachability + ordered solution steps
     lint.py       # soft quality warnings
-    server.py     # FastMCP: tools, resource, prompt
+    server.py     # MCPServer: tools, resource, prompt
     __main__.py   # `python -m case_tools`
   tests/
 .mcp.json         # repo root, registers the server
@@ -37,7 +37,8 @@ All take a parsed `Case`; none import `mcp`.
 - Resource: `case-format://spec` serves `docs/case-format.md`.
 - Prompt: `design_case(theme)`: template for `game-designer`: read the format, design the case, run the three tools until clean.
 - Path guard: one function resolves and checks the path against the repo's `data/` dir; violations return an error result (not a traceback).
-- Errors: unreadable file or invalid JSON become a structured error result; the server never crashes on a bad case.
+- Errors: unreadable file, invalid JSON or a rejected path become a structured result with an `error` field (a raised exception would reach the client only as a generic "Error executing tool", verified on mcp 2.3.0); the server never crashes on a bad case. Tool results are typed pydantic models so clients get `structured_content`.
+- stdio hygiene: nothing is ever printed to stdout except protocol messages.
 
 ## Tests (pytest, owned by qa)
 - Core: small case dicts built in the tests, one defect per test (dangling ref, duplicate name, non-snake_case id, unreachable clue, unlock cycle). `solve` tests assert step order.
