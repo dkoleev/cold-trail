@@ -21,6 +21,15 @@ target_compile_definitions(detective_core PUBLIC COLD_TRAIL_DATA_DIR="${CMAKE_SO
 add_executable(detective src/main.cpp)
 target_link_libraries(detective PRIVATE detective_core)
 
+if(MINGW)
+  # Start without the toolchain on PATH: embed libgcc/libstdc++, ship winpthread beside the exe.
+  target_link_options(detective PRIVATE -static-libgcc -static-libstdc++)
+  get_filename_component(MINGW_BIN_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+  find_file(WINPTHREAD_DLL libwinpthread-1.dll HINTS "${MINGW_BIN_DIR}" REQUIRED)
+  add_custom_command(TARGET detective POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${WINPTHREAD_DLL}" "$<TARGET_FILE_DIR:detective>")
+endif()
+
 enable_testing()
 FetchContent_Declare(googletest
   URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.tar.gz
