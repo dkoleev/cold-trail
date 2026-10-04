@@ -1011,7 +1011,9 @@ TEST(Playthrough, AccusingInnocentImmediatelyLoses) {
 - [ ] **Step 1:** `README.md`: what the game is, commands list, build (`cmake` cmd from Global Constraints), run (`build/detective [case.json]`), CLion note (open folder -> CMake auto-loads, run config `detective`), team roles table.
 - [ ] **Step 2:** Full local build/test. Expected: all PASS. Play case01 manually once to sanity-check feel/text.
 - [ ] **Step 3:** Commit `docs: README`, push. `gh pr ready`; `gh pr checks --watch`. Expected: 3 platforms green.
-- [ ] **Step 4:** Tell user PR is ready. User merges (Lead does not).
+- [ ] **Step 4:** Lead review of the PR (final whole-branch review). Post findings as a PR comment: `gh pr review 1 --comment --body-file <file>`. Lead never approves, merges or closes.
+- [ ] **Step 5:** Tell user PR is ready for their review. User reviews, then merges/closes.
+- [ ] **Step 6:** Remarks from Lead or user: dispatch `programmer` to fix and push to the PR branch (remarks only in `tests/` or `data/` go to qa / game-designer, who own those lanes). Re-check CI green after each fix push.
 
 ---
 
