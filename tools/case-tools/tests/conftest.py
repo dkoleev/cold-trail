@@ -37,3 +37,19 @@ MINI = {
 @pytest.fixture
 def mini_raw():
     return copy.deepcopy(MINI)
+
+
+@pytest.fixture
+def trap_raw(mini_raw):
+    """hall -> trap (one-way dead end, clue c_note) and hall <-> good (clue c_alibi)."""
+    mini_raw["locations"] = [
+        {"id": "hall", "name": "Hall", "description": "d", "exits": ["trap", "good"], "items": []},
+        {"id": "trap", "name": "Trap", "description": "d", "exits": [], "items": ["note"]},
+        {"id": "good", "name": "Good", "description": "d", "exits": ["hall"], "items": ["key"]},
+    ]
+    mini_raw["items"] = [
+        {"id": "note", "name": "torn note", "description": "d", "reveals": "c_note"},
+        {"id": "key", "name": "brass key", "description": "d", "reveals": "c_alibi"},
+    ]
+    mini_raw["people"] = []
+    return mini_raw

@@ -48,3 +48,10 @@ def test_case_without_people_does_not_crash(mini_raw):
     mini_raw["solution"]["killer"] = "butler"  # dangling on purpose: solve works on the model only
     result = solve(case_from_dict(mini_raw))
     assert result.obtainable == ("c_note",)
+
+
+def test_one_way_dead_end_does_not_hide_clues_from_a_player_who_chooses_well(trap_raw):
+    result = solve(case_from_dict(trap_raw))
+    assert set(result.obtainable) == {"c_note", "c_alibi"}
+    assert result.missing_required == ()
+    assert result.solvable is True

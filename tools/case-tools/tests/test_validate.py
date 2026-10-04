@@ -122,3 +122,10 @@ def test_all_issues_are_reported_together(mini_raw):
     mini_raw["start"] = "nowhere"
     mini_raw["solution"]["killer"] = "ghost"
     assert len(validate_raw(mini_raw)) == 2
+
+
+def test_a_line_that_requires_the_clue_it_reveals_is_an_error(mini_raw):
+    mini_raw["people"][0]["talk"][1]["requires"] = "c_alibi"
+    issues = validate_raw(mini_raw)
+    assert codes(issues) == ["self-requiring-line"]
+    assert issues[0].path == "people[0].talk[1]"

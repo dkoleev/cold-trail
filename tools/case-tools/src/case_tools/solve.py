@@ -86,23 +86,39 @@ def _collect(case: Case, loc: Location, found: list[str]) -> list[Step]:
     return steps
 
 
-def solve(case: Case) -> SolveResult:
-    by_id = {l.id: l for l in case.locations}
+def _obtainable(case: Case) -> list[str]:
+    """Clues a player who plans well can learn: fixed point over every reachable location (exits are static)."""
     found: list[str] = []
+    changed = True
+    while changed:
+        changed = False
+        for loc in _bfs_order(case):
+            before = len(found)
+            _collect(case, loc, found)
+            changed |= len(found) > before
+    return found
+
+
+def solve(case: Case) -> SolveResult:
+    """`obtainable`/`solvable` assume the player picks the best order; `steps` is a greedy walkthrough
+    (nearest location first) and can be incomplete when one-way exits trap the walker (lint flags them)."""
+    by_id = {l.id: l for l in case.locations}
+    walked: list[str] = []
     steps: list[Step] = []
     at = case.start
     progress = True
     while progress:
         progress = False
         for loc in _bfs_order(case):
-            if not _collect(case, loc, list(found)):
+            if not _collect(case, loc, list(walked)):
                 continue
             walk = _route(case, at, loc.id)
             if walk is None:
                 continue
             steps.extend(Step("go", by_id[hop].name, ()) for hop in walk)
             at = loc.id
-            steps.extend(_collect(case, loc, found))
+            steps.extend(_collect(case, loc, walked))
             progress = True
+    found = _obtainable(case)
     missing = tuple(c for c in case.solution.required_clues if c not in found)
     return SolveResult(tuple(found), tuple(steps), missing)

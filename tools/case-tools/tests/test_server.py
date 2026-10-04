@@ -124,3 +124,15 @@ def test_prompt_mentions_theme_and_tools(root):
     text = with_session(root, fn).messages[0].content.text
     assert "lighthouse" in text
     assert "validate_case" in text and "solve_case" in text and "lint_case" in text
+
+
+@pytest.mark.parametrize(
+    "content",
+    ["[" * 200000, '{"title": ' + "1" * 5000 + "}"],
+    ids=["too-deeply-nested", "integer-too-long"],
+)
+def test_pathological_json_gives_a_structured_error(root, content):
+    (root / "data" / "deep.json").write_text(content, encoding="utf-8")
+    res = call(root, "validate_case", "data/deep.json")
+    assert res.is_error is False
+    assert "invalid JSON" in res.structured_content["error"]

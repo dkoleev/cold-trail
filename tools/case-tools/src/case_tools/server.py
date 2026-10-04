@@ -56,10 +56,10 @@ def _load(path: str) -> tuple[object | None, str | None]:
         return json.loads(full.read_text(encoding="utf-8-sig")), None
     except FileNotFoundError:
         return None, f"file not found: {path}"
-    except json.JSONDecodeError as exc:
-        return None, f"invalid JSON in {path}: {exc}"
     except (OSError, UnicodeDecodeError) as exc:
         return None, f"cannot read {path}: {exc}"
+    except (ValueError, RecursionError) as exc:  # JSONDecodeError, too-long ints, too-deep nesting
+        return None, f"invalid JSON in {path}: {exc}"
 
 
 def _issues(items) -> list[IssueModel]:

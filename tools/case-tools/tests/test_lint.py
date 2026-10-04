@@ -56,3 +56,20 @@ def test_deep_unlock_chain(mini_raw):
 
 def test_shallow_chain_is_fine(mini_raw):
     assert "deep-unlock-chain" not in lint_codes(mini_raw)
+
+
+def test_dead_end_flags_the_exit_but_not_the_clues(trap_raw):
+    codes = lint_codes(trap_raw)
+    assert "one-way-exit" in codes
+    assert "unobtainable-clue" not in codes
+
+
+def test_unlock_cycle_makes_both_clues_unobtainable(mini_raw):
+    mini_raw["items"][0]["reveals"] = None
+    mini_raw["people"][0]["talk"] = [
+        {"text": "a", "requires": "c_alibi", "reveals": "c_note"},
+        {"text": "b", "requires": "c_note", "reveals": "c_alibi"},
+    ]
+    warnings = lint(case_from_dict(mini_raw))
+    unobtainable = sorted(w.path for w in warnings if w.code == "unobtainable-clue")
+    assert unobtainable == ["clues[0]", "clues[1]"]

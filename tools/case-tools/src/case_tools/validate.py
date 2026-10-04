@@ -125,6 +125,8 @@ def _check_references(raw: dict, issues: list[Issue]) -> None:
             for key in ("requires", "reveals"):
                 if line.get(key) is not None:
                     need("clues", line[key], f"people[{i}].talk[{j}].{key}")
+            if line.get("requires") is not None and line.get("requires") == line.get("reveals"):
+                _err(issues, "self-requiring-line", f"line requires and reveals the same clue '{line['requires']}'", f"people[{i}].talk[{j}]")
     for i, item in enumerate(raw["items"]):
         if item.get("reveals") is not None:
             need("clues", item["reveals"], f"items[{i}].reveals")

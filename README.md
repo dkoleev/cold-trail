@@ -77,7 +77,7 @@ py -3.13 -m venv .venv
 
 | MCP item | Name | What it does |
 |----------|------|--------------|
-| tool | `validate_case(path)` | Every format problem at once: wrong types, missing fields, dangling references, duplicate ids and names, non-snake_case ids |
+| tool | `validate_case(path)` | Every format problem at once: wrong types, missing fields, dangling references, duplicate ids and names, non-snake_case ids, talk lines that require the clue they reveal |
 | tool | `solve_case(path)` | Simulates a player: which clues are reachable, in what order (go / examine / talk steps), whether the required clues are |
 | tool | `lint_case(path)` | Quality warnings: sizes, no red herring, unlock chain deeper than 3, unobtainable clue, one-way exit, silent suspect |
 | resource | `case-format://spec` | `docs/case-format.md` |
