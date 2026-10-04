@@ -1,10 +1,11 @@
 # Cold Trail: design
 
-CLI text detective game in C++17. Player investigates, finds the maniac. Main goal of the project: learn to work with an agent team.
+CLI text detective game in C++20. Player investigates, finds the maniac. Main goal of the project: learn to work with an agent team.
 
 ## Decisions
 - Language of game text: English. Commands: English.
-- C++17, CMake (CLion-native). Deps via FetchContent: nlohmann/json, GoogleTest.
+- C++20 (`CMAKE_CXX_STANDARD 20`, required), CMake (CLion-native). Deps via FetchContent: nlohmann/json, GoogleTest.
+- Avoid `std::format` unless CI proves it builds on all 3 platforms; fall back to streams. No C++23 features.
 - Scope v1: one case, data-driven (JSON). Engine reads the case file.
 - One chance to accuse: wrong `accuse` = game over.
 
