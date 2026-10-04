@@ -6,3 +6,7 @@ cmake-build-*/
 .claude/settings.local.json
 .superpowers/
 *.log
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/

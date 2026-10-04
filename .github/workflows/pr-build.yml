@@ -22,3 +22,16 @@ jobs:
 
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
+
+  python:
+    name: case-tools (python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: tools/case-tools/pyproject.toml
+      - run: python -m pip install -e "tools/case-tools[dev]"
+      - run: python -m pytest tools/case-tools
