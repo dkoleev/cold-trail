@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "case-tools": {
+      "command": "${CASE_TOOLS_PYTHON:-python}",
+      "args": ["-m", "case_tools"],
+      "env": { "CASE_TOOLS_ROOT": "." }
+    }
+  }
+}

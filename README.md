@@ -65,6 +65,28 @@ build/detective data/case01.json
 3. Create or select run configuration `detective`
 4. Run via IDE or terminal
 
+## Python tooling (case-tools MCP server)
+
+`tools/case-tools/` is a Python MCP server (stdio) that checks case files while you write them. It does not depend on the C++ build.
+
+```powershell
+py -3.13 -m venv .venv
+.venv\Scripts\python -m pip install -e "tools/case-tools[dev]"
+.venv\Scripts\python -m pytest tools/case-tools
+```
+
+| MCP item | Name | What it does |
+|----------|------|--------------|
+| tool | `validate_case(path)` | Every format problem at once: wrong types, missing fields, dangling references, duplicate ids and names, non-snake_case ids, talk lines that require the clue they reveal |
+| tool | `solve_case(path)` | Simulates a player: which clues are reachable, in what order (go / examine / talk steps), whether the required clues are |
+| tool | `lint_case(path)` | Quality warnings: sizes, no red herring, unlock chain deeper than 3, unobtainable clue, one-way exit, silent suspect |
+| resource | `case-format://spec` | `docs/case-format.md` |
+| prompt | `design_case(theme)` | Template for designing a new case |
+
+Paths must look like `data/<name>.json` (relative, no subdirectories). Rejected paths, missing files and invalid JSON come back as a result with an `error` field, never as a crash.
+
+**Use it from Claude Code:** `.mcp.json` ships with the repo. Set the environment variable `CASE_TOOLS_PYTHON` to the venv interpreter (for example `.venv\Scripts\python.exe`), restart Claude Code, approve the project server and check `claude mcp list`. The `game-designer` agent is allowed to call the three tools.
+
 ## Case File Format
 
 Detective cases are JSON files. See `docs/case-format.md` for the schema. A case defines locations, suspects, items, clues, and the solution (required evidence and killer).
@@ -77,14 +99,14 @@ Two independent programs share one contract: the case file format (`docs/case-fo
 flowchart LR
     Designer["game-designer agent<br/>(MCP client)"] -- "MCP / stdio" --> Server
     Claude["Claude Code<br/>(MCP client)"] -- "MCP / stdio" --> Server
-    Server["case-tools MCP server<br/>Python, planned"] -- "reads, validates, solves" --> Cases[("data/*.json<br/>case files")]
+    Server["case-tools MCP server<br/>Python"] -- "reads, validates, solves" --> Cases[("data/*.json<br/>case files")]
     Cases -- "loaded at start" --> Client["detective<br/>CLI game client, C++"]
     Player((Player)) -- "stdin / stdout" --> Client
 ```
 
 - **Game client (`detective`, C++20):** loads a case through the validating loader, then runs the game loop: parser turns a line into a command, the engine (`Game`) updates state and returns text. The engine does no I/O, so it is unit-testable.
 - **Case files (`data/*.json`):** the only data both sides understand. The format is documented in `docs/case-format.md`.
-- **MCP server (`case-tools`, Python, planned):** gives MCP clients tools to validate a case, solve it (which clues are reachable, in what order) and lint its quality, plus the format spec as a resource. It does not depend on the C++ build. Design: `docs/superpowers/specs/2026-10-04-case-tools-mcp-design.md`.
+- **MCP server (`case-tools`, Python):** gives MCP clients tools to validate a case, solve it (which clues are reachable, in what order) and lint its quality, plus the format spec as a resource. It does not depend on the C++ build. Design: `docs/superpowers/specs/2026-10-04-case-tools-mcp-design.md`.
 - **MCP clients:** Claude Code and the `game-designer` agent. They call the server's tools while writing cases; the player never talks to MCP.
 
 ## Project Layout
@@ -93,7 +115,8 @@ flowchart LR
 src/               Engine: case loader, command parser, game logic
 tests/             GoogleTest suite
 data/              Case files (JSON)
-tools/case-tools/  MCP server in Python (planned)
+tools/case-tools/  MCP server in Python (validate, solve, lint cases)
+.mcp.json          Registers the case-tools MCP server for Claude Code
 docs/              Documentation
   case-format.md   Case JSON schema and design rules
   superpowers/     Specs and plans
